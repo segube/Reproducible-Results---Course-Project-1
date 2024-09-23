@@ -221,7 +221,7 @@ MedianDailyStepsNew <- median(DailyStepsNew$Steps, na.rm = TRUE)
 print(MeanDailyStepsNew)
 print(MedianDailyStepsNew)
 ```
-<br>
+<br> 
 
 The impact of imputing missing data on the estimates of total daily has increased both the mean and median
 
