@@ -1,0 +1,284 @@
+---
+title: "Reproducible Results - Course Project 1"
+author: "Benoit Séguin"
+date: '2024-09-22'
+output:
+  html_document: default
+  word_document: default
+---
+
+<br>
+This document presents the steps necessary to analyze the activity data which shows the number of steps taken in 5 minute intervals
+<br>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load and prepare the data
+
+To answer the question, we will first need to load the required libraries to execute the code
+
+```{r Load Libraries}
+library(dplyr)
+library(tidyr)
+library(lubridate)
+```
+
+<br>
+
+Then we will load the activity.csv data using read.csv
+
+```{r Load Data}
+activity <- read.csv("activity.csv")
+```
+
+<br>
+
+Finally, we will prepare the data to ensure we can analyze it properly
+```{r Prepare Data}
+activity$date = as.Date(activity$date,"%Y-%m-%d")
+```
+
+## Q1 - What is the mean total number of steps taken per day?
+
+<br>
+
+
+#### 1. Calculate the total number of steps taken per day, ignoring missing values as indicated.
+
+<br>
+
+```{r Dailysteps}
+DailySteps <- activity %>% group_by(date) %>% summarize(Steps = sum(steps,na.rm = TRUE))
+
+```
+
+<br>
+
+#### 2. Plot histogram
+
+<br>
+
+```{r DailyStepsHist}
+StepFrequency <- DailySteps$Steps
+hist(StepFrequency, breaks=25, xlim=c(0,25000), xlab = "Number of steps (1000 steps interval)")
+```
+
+<br>
+
+#### 3. Calculate and report the mean and median of total number of steps
+
+<br>
+
+```{r StepsMeanMedian}
+MeanDailySteps <- mean(DailySteps$Steps, na.rm = TRUE)
+MedianDailySteps <- median(DailySteps$Steps, na.rm = TRUE)
+```
+
+<br>
+
+
+The daily steps mean is:
+
+```{r Answer Q1 Mean}
+print(MeanDailySteps)
+```
+<br>
+
+The daily steps median is:
+
+```{r Answer Q1 Median}
+print(MedianDailySteps)
+```
+<br>
+
+<br>
+
+## Q2: What is the average daily pattern?
+
+<br>
+
+#### 1. Timeseries plot of the average number of steps per interval
+
+<br>
+
+Sum the total number of steps per interval, then average by interval and plot, ignoring missing values as indicated.
+
+```{r Timeseries}
+IntervalSteps <- 
+  activity %>% group_by(interval) %>% 
+  summarize(mean = mean(steps, na.rm = TRUE))
+
+plot(
+  IntervalSteps$interval,IntervalSteps$mean,
+  xlim=c(0,2400),
+  main = "Average number of steps per daily interval",
+  xlab = "Interval",
+  ylab = "Average number of steps",
+  type="l")
+```
+
+<br>
+
+#### 2. Identify which 5 minute interval, on average, contains the maximum number of steps
+
+<br>
+
+Use the max function to identify all 5 minute intervals with the max average value. 
+
+```{r MaxInterval Calc}
+MaxInterval <- 
+  IntervalSteps[IntervalSteps$mean == max(IntervalSteps$mean), ]$interval
+```
+
+<br>
+
+The interval with the max average is:
+
+```{r Print MaxInterval}
+print(MaxInterval)
+```
+<br>
+
+## Q3 -Imputing missing values
+
+<br>
+
+#### 1. Calculate and report the total number of missing values
+
+<br>
+
+Use the function is.na to identify missing values
+
+
+```{r Missing values}
+sum(is.na(activity$steps))
+sum(is.na(activity$date))
+sum(is.na(activity$interval))
+```
+<br>
+
+There are 2304 records with missing steps
+
+<br>
+
+#### 2. Impute interval mean for missing steps
+
+<br>
+
+Replicate Steps column and Impute interval mean to NA values
+```{r replicate Impute interval mean}
+activity$ImputedSteps <- activity$steps
+activity <- activity %>% 
+  group_by(interval) %>%
+  mutate(
+    ImputedSteps = ifelse(is.na(ImputedSteps), mean(ImputedSteps, na.rm = TRUE),ImputedSteps))
+```
+
+<br>
+
+Confirm no NA
+```{r Confirm no NA}
+sum(is.na(activity$ImputedSteps))
+```
+#### 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+<br>
+
+Create new dataset
+```{r activityNew}
+activityNew <- activity[,c("ImputedSteps","date","interval")]
+names(activityNew)[1] <- "steps"
+head(activityNew)
+```
+
+<br>
+
+#### 3. Recreate Q1 with activityNew. Are there differences in Mean and Median total number of steps taken per day
+
+<br>
+
+Repurpose code from Q1 with activityNew to create new histogram
+
+```{r DailyStepsHistNew}
+DailyStepsNew <- activityNew %>% group_by(date) %>% summarize(Steps = sum(steps,na.rm = TRUE))
+StepFrequencyNew <- DailyStepsNew$Steps
+hist(StepFrequencyNew, breaks=25, xlim=c(0,25000), xlab = "Number of steps (1000 steps interval)")
+```
+
+<br>
+
+Calculate and report mean and median total number of steps
+
+
+
+The new daily steps mean and median are:
+
+```{r New daily mean and median}
+MeanDailyStepsNew <- mean(DailyStepsNew$Steps, na.rm = TRUE)
+MedianDailyStepsNew <- median(DailyStepsNew$Steps, na.rm = TRUE)
+print(MeanDailyStepsNew)
+print(MedianDailyStepsNew)
+```
+<br>
+
+The impact of imputing missing data on the estimates of total daily has increased both the mean and median
+
+<br>
+
+## Q4: Are there differences in activity patterns between weekdays and weekends?
+
+<br>
+
+#### 1. Add weekday to the activityNew dataset
+
+<br>
+
+```{r Add weekdays}
+activityNew$Day <- weekdays(activityNew$date)
+```
+
+<br>
+
+Create factor variable to identify if weekday or weekend
+```{r Add factor variable for day type}
+activityNew$Weekday <- factor(ifelse(wday(activityNew$date) %in% c(1,7),"Weekend","Weekday"))
+```
+
+<br>
+
+#### 2. Timeseries panel plot
+
+<br>
+
+Time series panel plot for the 5 minute intervals and average number of steps taken, averaged accross all weekday or weekend days
+
+```{r Calculate mean steps based on Interval and Weekday grouping then plot data}
+WeekdaySteps <- 
+  activityNew %>% group_by(Weekday,interval) %>% 
+  summarize(mean = mean(steps, na.rm = TRUE))
+
+
+
+par(mfrow = c(2, 1), mar=c(2,4,2,0.2))
+plot(
+  WeekdaySteps$interval[WeekdaySteps$Weekday == "Weekday"],
+  WeekdaySteps$mean[WeekdaySteps$Weekday == "Weekday"],
+  xlim=c(0,2400),
+  ylim=c(0,250),
+  main = "Weekday average number of steps per daily interval",
+  xlab = "Interval",
+  ylab = "Average number of steps",
+  type="l")
+plot(
+  WeekdaySteps$interval[WeekdaySteps$Weekday == "Weekend"],
+  WeekdaySteps$mean[WeekdaySteps$Weekday == "Weekend"],
+  xlim=c(0,2400),
+  ylim=c(0,250),
+  main = "Weekend average number of steps per daily interval",
+  xlab = "Interval",
+  ylab = "Average number of steps",
+  type="l")
+
+```
