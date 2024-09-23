@@ -3,8 +3,8 @@ title: "Reproducible Research: Peer Assessment 1"
 author: "Benoit Séguin"
 date: '2024-09-22'
 output:
-  html_document: default
   word_document: default
+  html_document: default
 ---
 
 <br>
