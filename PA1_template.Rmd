@@ -1,5 +1,5 @@
 ---
-title: "Reproducible Results - Course Project 1"
+title: "Reproducible Research: Peer Assessment 1"
 author: "Benoit Séguin"
 date: '2024-09-22'
 output:
@@ -15,7 +15,7 @@ This document presents the steps necessary to analyze the activity data which sh
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Load and prepare the data
+## Loading and preprocessing the data
 
 To answer the question, we will first need to load the required libraries to execute the code
 
@@ -40,7 +40,7 @@ Finally, we will prepare the data to ensure we can analyze it properly
 activity$date = as.Date(activity$date,"%Y-%m-%d")
 ```
 
-## Q1 - What is the mean total number of steps taken per day?
+## What is mean total number of steps taken per day?
 
 <br>
 
@@ -95,7 +95,7 @@ print(MedianDailySteps)
 
 <br>
 
-## Q2: What is the average daily pattern?
+## What is the average daily activity pattern?
 
 <br>
 
@@ -141,7 +141,7 @@ print(MaxInterval)
 ```
 <br>
 
-## Q3 -Imputing missing values
+## Imputing missing values
 
 <br>
 
@@ -227,7 +227,7 @@ The impact of imputing missing data on the estimates of total daily has increase
 
 <br>
 
-## Q4: Are there differences in activity patterns between weekdays and weekends?
+## Are there differences in activity patterns between weekdays and weekends?
 
 <br>
 
