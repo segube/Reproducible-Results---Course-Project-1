@@ -209,7 +209,7 @@ hist(StepFrequencyNew, breaks=25, xlim=c(0,25000), xlab = "Number of steps (1000
 
 <br>
 
-Calculate and report mean and median total number of steps
+Calculate and report mean and median total number of steps 
 
 
 
